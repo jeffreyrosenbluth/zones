@@ -1,18 +1,18 @@
+import { useEffect } from "react";
+import useCanvasWindow from "@/art";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-// import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label"; // Shadcn Label component
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectTrigger,
   SelectValue,
   SelectContent,
   SelectGroup,
-  SelectLabel,
   SelectItem,
 } from "@/components/ui/select";
-import { Slider } from "@/components/ui/slider"; // Shadcn Slider
-import { ChromePicker, ColorResult } from "react-color"; // Import the ChromePicker
+import { Slider } from "@/components/ui/slider";
+import { ChromePicker, ColorResult } from "react-color";
 import { Switch } from "@/components/ui/switch";
 
 type RegionSettings = {
@@ -50,6 +50,24 @@ export default function App() {
   const [colorPickerVisible, setColorPickerVisible] = useState<boolean[]>(
     Array(16).fill(false)
   );
+  const { openCanvasWindow } = useCanvasWindow();
+
+  const handleKeyPress = (event: KeyboardEvent) => {
+    if (event.key === "c") {
+      // Detect if the 'c' key is pressed
+      openCanvasWindow();
+    }
+  };
+
+  useEffect(() => {
+    // Attach keypress event listener
+    window.addEventListener("keydown", handleKeyPress);
+
+    return () => {
+      // Cleanup listener on unmount
+      window.removeEventListener("keydown", handleKeyPress);
+    };
+  }, []);
 
   const handleControlChange = (
     index: number,
@@ -70,7 +88,7 @@ export default function App() {
 
   const toggleColorPicker = (index: number) => {
     const updatedVisibility = [...colorPickerVisible];
-    updatedVisibility[index] = !updatedVisibility[index]; // Toggle visibility
+    updatedVisibility[index] = !updatedVisibility[index];
     setColorPickerVisible(updatedVisibility);
   };
 
@@ -83,7 +101,7 @@ export default function App() {
         {controls.map((control, index) => (
           <div
             key={index}
-            className="border-solid border-slate-600 border-2 rounded-none p-2 bg-background rounded-lg shadow-md dark:bg-background dark:text-card-foreground"
+            className="border-solid border-slate-600 border-2 rounded-none p-2 bg-background shadow-md dark:bg-background dark:text-card-foreground"
           >
             <p className="flex flex-row justify-center font-bold mb-2 text-orange-500">
               Zone {index + 1}
@@ -102,78 +120,9 @@ export default function App() {
               />
             </div>
 
-            {/* Color Picker Toggle */}
-            <div className="m2-4">
-              {/* <Label className="block mb-2 text-sm">Color</Label> */}
-              <Button
-                className="w-full  bg-slate-600 text-white hover:bg-slate-500"
-                onClick={() => toggleColorPicker(index)}
-              >
-                {colorPickerVisible[index]
-                  ? "Close Color Picker"
-                  : "Color Picker"}
-              </Button>
-              {colorPickerVisible[index] && (
-                <ChromePicker
-                  color={control.color} // Current RGBA color from the state
-                  onChange={(color) => handleColorChange(index, color)}
-                />
-              )}
-            </div>
-
-            {/* Domain Select */}
-            <div className="mt-2 flex items-center justify-between">
-              <Label className="w-32">Domain</Label>{" "}
-              {/* Adjusted label width */}
-              <Select
-                value={control.domain}
-                onValueChange={(value) =>
-                  handleControlChange(index, "domain", value)
-                }
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Select a domain" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectGroup>
-                    <SelectItem value="constrained">Constrained</SelectItem>
-                    <SelectItem value="free">Free</SelectItem>
-                  </SelectGroup>
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Position Function Select */}
-            <div className="mt-2 flex items-center justify-between">
-              <Label className="w-32">Movement</Label>{" "}
-              {/* Adjusted label width */}
-              <Select
-                value={control.posFn}
-                onValueChange={(value) =>
-                  handleControlChange(index, "posFn", value)
-                }
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Select a function" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectGroup>
-                    <SelectItem value="simple">Simple</SelectItem>
-                    <SelectItem value="cosY">Cos Y</SelectItem>
-                    <SelectItem value="studentt">Student T</SelectItem>
-                    <SelectItem value="cosX">Cos X</SelectItem>
-                    <SelectItem value="cosXY">Cos XY</SelectItem>
-                    <SelectItem value="direction">Direction</SelectItem>
-                    <SelectItem value="simplex">Simplex</SelectItem>
-                  </SelectGroup>
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* BLX and BLY Sliders */}
+            {/* x and y Sliders */}
             <div className="mt-2 flex items-center justify-between">
               <Label className="w-20">x</Label>{" "}
-              {/* Added w-20 to control width */}
               <Slider
                 className="w-full"
                 value={[control.blx]}
@@ -184,12 +133,11 @@ export default function App() {
                   handleControlChange(index, "blx", value[0])
                 }
               />
-              <span className="ml-4">{control.blx}px</span>
+              <span className="ml-4">{control.blx}</span>
             </div>
 
             <div className="mt-2 flex items-center justify-between">
               <Label className="w-20">y</Label>{" "}
-              {/* Added w-20 to control width */}
               <Slider
                 className="w-full"
                 value={[control.bly]}
@@ -200,13 +148,12 @@ export default function App() {
                   handleControlChange(index, "bly", value[0])
                 }
               />
-              <span className="ml-4">{control.bly}px</span>
+              <span className="ml-4">{control.bly}</span>
             </div>
 
             {/* Size Width and Height Sliders */}
             <div className="mt-2 flex items-center justify-between">
               <Label className="w-20">Width</Label>{" "}
-              {/* Added w-20 to control width */}
               <Slider
                 className="w-full"
                 value={[control.sizew]}
@@ -217,12 +164,11 @@ export default function App() {
                   handleControlChange(index, "sizew", value[0])
                 }
               />
-              <span className="ml-4">{control.sizew}px</span>
+              <span className="ml-4">{control.sizew}</span>
             </div>
 
             <div className="mt-2 flex items-center justify-between">
               <Label className="w-20">Height</Label>{" "}
-              {/* Added w-20 to control width */}
               <Slider
                 className="w-full"
                 value={[control.sizeh]}
@@ -233,19 +179,39 @@ export default function App() {
                   handleControlChange(index, "sizeh", value[0])
                 }
               />
-              <span className="ml-4">{control.sizeh}px</span>
+              <span className="ml-4">{control.sizeh}</span>
+            </div>
+
+            {/* Domain Select */}
+            <div className="mt-2 flex items-center justify-between">
+              <Label className="w-32">Domain</Label>{" "}
+              <Select
+                value={control.domain}
+                onValueChange={(value) =>
+                  handleControlChange(index, "domain", value)
+                }
+              >
+                <SelectTrigger className="w-full bg-slate-600">
+                  <SelectValue placeholder="Select a domain" />
+                </SelectTrigger>
+                <SelectContent className="bg-slate-600">
+                  <SelectGroup>
+                    <SelectItem value="constrained">Constrained</SelectItem>
+                    <SelectItem value="free">Free</SelectItem>
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
             </div>
 
             {/* Radius Slider */}
             <div className="mt-2 flex items-center justify-between">
               <Label className="w-20">Radius</Label>{" "}
-              {/* Added w-20 to control width */}
               <Slider
                 className="w-full"
                 value={[control.radius]}
                 min={0.5}
                 max={10}
-                step={0.1}
+                step={0.5}
                 onValueChange={(value) =>
                   handleControlChange(index, "radius", value[0])
                 }
@@ -256,7 +222,6 @@ export default function App() {
             {/* Count Slider */}
             <div className="mt-2 flex items-center justify-between">
               <Label className="w-20">Count</Label>{" "}
-              {/* Added w-20 to control width */}
               <Slider
                 className="w-full"
                 value={[control.count]}
@@ -270,10 +235,38 @@ export default function App() {
               <span className="ml-4">{control.count}</span>
             </div>
 
+            {/* Movement Select */}
+            <div className="mt-2 flex items-center justify-between">
+              <Label className="w-32">Movement</Label>{" "}
+              {/* Adjusted label width */}
+              <Select
+                value={control.posFn}
+                onValueChange={(value) =>
+                  handleControlChange(index, "posFn", value)
+                }
+              >
+                <SelectTrigger className="w-full bg-slate-600">
+                  <SelectValue placeholder="Select a function" />
+                </SelectTrigger>
+                <SelectContent className="bg-slate-600">
+                  <SelectGroup>
+                    <SelectItem value="simple">Random Walk</SelectItem>
+                    <SelectItem value="studentt">
+                      t-distribution walk
+                    </SelectItem>
+                    <SelectItem value="simplex">Flow Field</SelectItem>
+                    <SelectItem value="cosY">Sinusoid Horizontal</SelectItem>
+                    <SelectItem value="cosX">Sinusoid Vertical</SelectItem>
+                    <SelectItem value="cosXY">Sinusoid</SelectItem>
+                    <SelectItem value="direction">Direction</SelectItem>
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+            </div>
+
             {/* Direction X and Y Sliders */}
             <div className="mt-2 flex items-center justify-between">
               <Label className="w-32">x-direction</Label>{" "}
-              {/* Added w-20 to control width */}
               <Slider
                 className="w-full"
                 value={[control.dirx]}
@@ -289,7 +282,6 @@ export default function App() {
 
             <div className="mt-2 flex items-center justify-between">
               <Label className="w-32">y-direction</Label>{" "}
-              {/* Added w-20 to control width */}
               <Slider
                 className="w-full"
                 value={[control.diry]}
@@ -301,6 +293,24 @@ export default function App() {
                 }
               />
               <span className="ml-4">{control.diry}</span>
+            </div>
+
+            {/* Color Picker Toggle */}
+            <div className="mt-2">
+              <Button
+                className="w-full  bg-slate-600 text-white hover:bg-slate-500"
+                onClick={() => toggleColorPicker(index)}
+              >
+                {colorPickerVisible[index]
+                  ? "Close Color Picker"
+                  : "Color Picker"}
+              </Button>
+              {colorPickerVisible[index] && (
+                <ChromePicker
+                  color={control.color}
+                  onChange={(color) => handleColorChange(index, color)}
+                />
+              )}
             </div>
           </div>
         ))}
