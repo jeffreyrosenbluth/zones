@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+// import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label"; // Shadcn Label component
 import {
   Select,
@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider"; // Shadcn Slider
 import { ChromePicker, ColorResult } from "react-color"; // Import the ChromePicker
+import { Switch } from "@/components/ui/switch";
 
 type RegionSettings = {
   visible: boolean;
@@ -30,11 +31,11 @@ type RegionSettings = {
 };
 
 const initialControls: RegionSettings[] = Array(16).fill({
-  visible: true,
+  visible: false,
   blx: 0,
-  bly: 0,
-  sizew: 300,
-  sizeh: 300,
+  bly: 1080,
+  sizew: 270,
+  sizeh: 270,
   domain: "constrained",
   radius: 1,
   count: 1000,
@@ -82,30 +83,35 @@ export default function App() {
         {controls.map((control, index) => (
           <div
             key={index}
-            className="p-2 bg-card rounded-lg shadow-md dark:bg-card dark:text-card-foreground"
+            className="border-solid border-slate-600 border-2 rounded-none p-2 bg-background rounded-lg shadow-md dark:bg-background dark:text-card-foreground"
           >
-            <p className="font-bold mb-4 text-orange-500">Zone {index + 1}</p>
+            <p className="flex flex-row justify-center font-bold mb-2 text-orange-500">
+              Zone {index + 1}
+            </p>
 
-            {/* Visibility Control */}
-            <Button
-              className="w-full"
-              onClick={() =>
-                handleControlChange(index, "visible", !control.visible)
-              }
-            >
-              {control.visible ? "Hide" : "Show"}
-            </Button>
+            {/* Visibility Control using Shadcn Switch */}
+            <div className="flex items-center justify-between mb-2">
+              <Label htmlFor={`visible-switch-${index}`}>Visible</Label>
+              <Switch
+                className="data-[state=checked]:bg-green-500 data-[state=unchecked]:bg-amber-800"
+                id={`visible-switch-${index}`}
+                checked={control.visible}
+                onCheckedChange={(checked) =>
+                  handleControlChange(index, "visible", checked)
+                }
+              />
+            </div>
 
             {/* Color Picker Toggle */}
-            <div className="mt-4">
-              <Label className="block mb-2 text-sm">Color</Label>
+            <div className="m2-4">
+              {/* <Label className="block mb-2 text-sm">Color</Label> */}
               <Button
-                className="w-full mb-2"
+                className="w-full  bg-slate-600 text-white hover:bg-slate-500"
                 onClick={() => toggleColorPicker(index)}
               >
                 {colorPickerVisible[index]
                   ? "Close Color Picker"
-                  : "Open Color Picker"}
+                  : "Color Picker"}
               </Button>
               {colorPickerVisible[index] && (
                 <ChromePicker
@@ -117,7 +123,7 @@ export default function App() {
 
             {/* Domain Select */}
             <div className="mt-2 flex items-center justify-between">
-              <Label className="w-32">Domain:</Label>{" "}
+              <Label className="w-32">Domain</Label>{" "}
               {/* Adjusted label width */}
               <Select
                 value={control.domain}
@@ -130,7 +136,6 @@ export default function App() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectGroup>
-                    <SelectLabel>Domains</SelectLabel>
                     <SelectItem value="constrained">Constrained</SelectItem>
                     <SelectItem value="free">Free</SelectItem>
                   </SelectGroup>
@@ -140,7 +145,7 @@ export default function App() {
 
             {/* Position Function Select */}
             <div className="mt-2 flex items-center justify-between">
-              <Label className="w-32">Movement:</Label>{" "}
+              <Label className="w-32">Movement</Label>{" "}
               {/* Adjusted label width */}
               <Select
                 value={control.posFn}
@@ -153,7 +158,6 @@ export default function App() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectGroup>
-                    <SelectLabel>Position Functions</SelectLabel>
                     <SelectItem value="simple">Simple</SelectItem>
                     <SelectItem value="cosY">Cos Y</SelectItem>
                     <SelectItem value="studentt">Student T</SelectItem>
@@ -168,7 +172,7 @@ export default function App() {
 
             {/* BLX and BLY Sliders */}
             <div className="mt-2 flex items-center justify-between">
-              <Label className="w-20">BLX:</Label>{" "}
+              <Label className="w-20">x</Label>{" "}
               {/* Added w-20 to control width */}
               <Slider
                 className="w-full"
@@ -184,7 +188,7 @@ export default function App() {
             </div>
 
             <div className="mt-2 flex items-center justify-between">
-              <Label className="w-20">BLY:</Label>{" "}
+              <Label className="w-20">y</Label>{" "}
               {/* Added w-20 to control width */}
               <Slider
                 className="w-full"
@@ -201,7 +205,7 @@ export default function App() {
 
             {/* Size Width and Height Sliders */}
             <div className="mt-2 flex items-center justify-between">
-              <Label className="w-20">Width:</Label>{" "}
+              <Label className="w-20">Width</Label>{" "}
               {/* Added w-20 to control width */}
               <Slider
                 className="w-full"
@@ -217,7 +221,7 @@ export default function App() {
             </div>
 
             <div className="mt-2 flex items-center justify-between">
-              <Label className="w-20">Height:</Label>{" "}
+              <Label className="w-20">Height</Label>{" "}
               {/* Added w-20 to control width */}
               <Slider
                 className="w-full"
@@ -234,7 +238,7 @@ export default function App() {
 
             {/* Radius Slider */}
             <div className="mt-2 flex items-center justify-between">
-              <Label className="w-20">Radius:</Label>{" "}
+              <Label className="w-20">Radius</Label>{" "}
               {/* Added w-20 to control width */}
               <Slider
                 className="w-full"
@@ -251,7 +255,7 @@ export default function App() {
 
             {/* Count Slider */}
             <div className="mt-2 flex items-center justify-between">
-              <Label className="w-20">Count:</Label>{" "}
+              <Label className="w-20">Count</Label>{" "}
               {/* Added w-20 to control width */}
               <Slider
                 className="w-full"
@@ -268,7 +272,7 @@ export default function App() {
 
             {/* Direction X and Y Sliders */}
             <div className="mt-2 flex items-center justify-between">
-              <Label className="w-20">Dir X:</Label>{" "}
+              <Label className="w-32">x-direction</Label>{" "}
               {/* Added w-20 to control width */}
               <Slider
                 className="w-full"
@@ -284,7 +288,7 @@ export default function App() {
             </div>
 
             <div className="mt-2 flex items-center justify-between">
-              <Label className="w-20">Dir Y:</Label>{" "}
+              <Label className="w-32">y-direction</Label>{" "}
               {/* Added w-20 to control width */}
               <Slider
                 className="w-full"
