@@ -12,6 +12,7 @@ import {
   SelectItem,
 } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider"; // Shadcn Slider
+import { ChromePicker, ColorResult } from "react-color"; // Import the ChromePicker
 
 type RegionSettings = {
   visible: boolean;
@@ -40,11 +41,14 @@ const initialControls: RegionSettings[] = Array(16).fill({
   posFn: "simple",
   dirx: 1,
   diry: 0,
-  color: "#ff0000",
+  color: "rgba(255, 255, 255, 0.5)",
 });
 
 export default function App() {
   const [controls, setControls] = useState<RegionSettings[]>(initialControls);
+  const [colorPickerVisible, setColorPickerVisible] = useState<boolean[]>(
+    Array(16).fill(false)
+  );
 
   const handleControlChange = (
     index: number,
@@ -58,6 +62,16 @@ export default function App() {
     };
     setControls(updatedControls);
   };
+  const handleColorChange = (index: number, color: ColorResult) => {
+    const rgbaColor = `rgba(${color.rgb.r}, ${color.rgb.g}, ${color.rgb.b}, ${color.rgb.a})`;
+    handleControlChange(index, "color", rgbaColor);
+  };
+
+  const toggleColorPicker = (index: number) => {
+    const updatedVisibility = [...colorPickerVisible];
+    updatedVisibility[index] = !updatedVisibility[index]; // Toggle visibility
+    setColorPickerVisible(updatedVisibility);
+  };
 
   return (
     <div className="h-screen bg-background text-foreground p-8 overflow-auto">
@@ -68,9 +82,9 @@ export default function App() {
         {controls.map((control, index) => (
           <div
             key={index}
-            className="p-4 bg-card rounded-lg shadow-md dark:bg-card dark:text-card-foreground"
+            className="p-2 bg-card rounded-lg shadow-md dark:bg-card dark:text-card-foreground"
           >
-            <h3 className="text-lg font-bold mb-4">Panel {index + 1}</h3>
+            <p className="font-bold mb-4 text-orange-500">Zone {index + 1}</p>
 
             {/* Visibility Control */}
             <Button
@@ -82,22 +96,29 @@ export default function App() {
               {control.visible ? "Hide" : "Show"}
             </Button>
 
-            {/* Color Picker */}
+            {/* Color Picker Toggle */}
             <div className="mt-4">
               <Label className="block mb-2 text-sm">Color</Label>
-              <Input
-                className="w-full"
-                type="color"
-                value={control.color}
-                onChange={(e) =>
-                  handleControlChange(index, "color", e.target.value)
-                }
-              />
+              <Button
+                className="w-full mb-2"
+                onClick={() => toggleColorPicker(index)}
+              >
+                {colorPickerVisible[index]
+                  ? "Close Color Picker"
+                  : "Open Color Picker"}
+              </Button>
+              {colorPickerVisible[index] && (
+                <ChromePicker
+                  color={control.color} // Current RGBA color from the state
+                  onChange={(color) => handleColorChange(index, color)}
+                />
+              )}
             </div>
 
             {/* Domain Select */}
-            <div className="mt-4">
-              <Label className="block mb-2 text-sm">Domain</Label>
+            <div className="mt-2 flex items-center justify-between">
+              <Label className="w-32">Domain:</Label>{" "}
+              {/* Adjusted label width */}
               <Select
                 value={control.domain}
                 onValueChange={(value) =>
@@ -118,8 +139,9 @@ export default function App() {
             </div>
 
             {/* Position Function Select */}
-            <div className="mt-4">
-              <Label className="block mb-2 text-sm">Position Function</Label>
+            <div className="mt-2 flex items-center justify-between">
+              <Label className="w-32">Movement:</Label>{" "}
+              {/* Adjusted label width */}
               <Select
                 value={control.posFn}
                 onValueChange={(value) =>
@@ -145,8 +167,9 @@ export default function App() {
             </div>
 
             {/* BLX and BLY Sliders */}
-            <div className="mt-4 flex items-center justify-between">
-              <Label className="mr-4">BLX:</Label>
+            <div className="mt-2 flex items-center justify-between">
+              <Label className="w-20">BLX:</Label>{" "}
+              {/* Added w-20 to control width */}
               <Slider
                 className="w-full"
                 value={[control.blx]}
@@ -160,8 +183,9 @@ export default function App() {
               <span className="ml-4">{control.blx}px</span>
             </div>
 
-            <div className="mt-4 flex items-center justify-between">
-              <Label className="mr-4">BLY:</Label>
+            <div className="mt-2 flex items-center justify-between">
+              <Label className="w-20">BLY:</Label>{" "}
+              {/* Added w-20 to control width */}
               <Slider
                 className="w-full"
                 value={[control.bly]}
@@ -176,8 +200,9 @@ export default function App() {
             </div>
 
             {/* Size Width and Height Sliders */}
-            <div className="mt-4 flex items-center justify-between">
-              <Label className="mr-4">Width:</Label>
+            <div className="mt-2 flex items-center justify-between">
+              <Label className="w-20">Width:</Label>{" "}
+              {/* Added w-20 to control width */}
               <Slider
                 className="w-full"
                 value={[control.sizew]}
@@ -191,8 +216,9 @@ export default function App() {
               <span className="ml-4">{control.sizew}px</span>
             </div>
 
-            <div className="mt-4 flex items-center justify-between">
-              <Label className="mr-4">Height:</Label>
+            <div className="mt-2 flex items-center justify-between">
+              <Label className="w-20">Height:</Label>{" "}
+              {/* Added w-20 to control width */}
               <Slider
                 className="w-full"
                 value={[control.sizeh]}
@@ -207,8 +233,9 @@ export default function App() {
             </div>
 
             {/* Radius Slider */}
-            <div className="mt-4 flex items-center justify-between">
-              <Label className="mr-4">Radius:</Label>
+            <div className="mt-2 flex items-center justify-between">
+              <Label className="w-20">Radius:</Label>{" "}
+              {/* Added w-20 to control width */}
               <Slider
                 className="w-full"
                 value={[control.radius]}
@@ -223,8 +250,9 @@ export default function App() {
             </div>
 
             {/* Count Slider */}
-            <div className="mt-4 flex items-center justify-between">
-              <Label className="mr-4">Count:</Label>
+            <div className="mt-2 flex items-center justify-between">
+              <Label className="w-20">Count:</Label>{" "}
+              {/* Added w-20 to control width */}
               <Slider
                 className="w-full"
                 value={[control.count]}
@@ -239,8 +267,9 @@ export default function App() {
             </div>
 
             {/* Direction X and Y Sliders */}
-            <div className="mt-4 flex items-center justify-between">
-              <Label className="mr-4">Dir X:</Label>
+            <div className="mt-2 flex items-center justify-between">
+              <Label className="w-20">Dir X:</Label>{" "}
+              {/* Added w-20 to control width */}
               <Slider
                 className="w-full"
                 value={[control.dirx]}
@@ -254,8 +283,9 @@ export default function App() {
               <span className="ml-4">{control.dirx}</span>
             </div>
 
-            <div className="mt-4 flex items-center justify-between">
-              <Label className="mr-4">Dir Y:</Label>
+            <div className="mt-2 flex items-center justify-between">
+              <Label className="w-20">Dir Y:</Label>{" "}
+              {/* Added w-20 to control width */}
               <Slider
                 className="w-full"
                 value={[control.diry]}
