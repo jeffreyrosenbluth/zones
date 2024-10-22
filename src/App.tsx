@@ -14,26 +14,12 @@ import {
 import { Slider } from "@/components/ui/slider";
 import { ChromePicker, ColorResult } from "react-color";
 import { Switch } from "@/components/ui/switch";
-
-type RegionSettings = {
-  visible: boolean;
-  blx: number;
-  bly: number;
-  sizew: number;
-  sizeh: number;
-  domain: string;
-  radius: number;
-  count: number;
-  posFn: string;
-  dirx: number;
-  diry: number;
-  color: string;
-};
+import { RegionSettings } from "./core";
 
 const initialControls: RegionSettings[] = Array(16).fill({
   visible: false,
-  blx: 0,
-  bly: 1080,
+  tlx: 0,
+  tly: 0,
   sizew: 270,
   sizeh: 270,
   domain: "constrained",
@@ -139,30 +125,30 @@ export default function App() {
               <Label className="w-20">x</Label>{" "}
               <Slider
                 className="w-full"
-                value={[control.blx]}
+                value={[control.tlx]}
                 min={0}
                 max={1200}
                 step={10}
                 onValueChange={(value) =>
-                  handleControlChange(index, "blx", value[0])
+                  handleControlChange(index, "tlx", value[0])
                 }
               />
-              <span className="ml-4">{control.blx}</span>
+              <span className="ml-4">{control.tlx}</span>
             </div>
 
             <div className="mt-2 flex items-center justify-between">
               <Label className="w-20">y</Label>{" "}
               <Slider
                 className="w-full"
-                value={[control.bly]}
+                value={[control.tly]}
                 min={0}
                 max={1200}
                 step={10}
                 onValueChange={(value) =>
-                  handleControlChange(index, "bly", value[0])
+                  handleControlChange(index, "tly", value[0])
                 }
               />
-              <span className="ml-4">{control.bly}</span>
+              <span className="ml-4">{control.tly}</span>
             </div>
 
             {/* Size Width and Height Sliders */}

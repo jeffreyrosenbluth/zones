@@ -111,8 +111,8 @@ function setup(
 
 function region(r: RegionSettings, canvasSize: Vec): Region {
   if (!r.visible) return Region.emptyRegion();
-  const bl = new Vec(r.blx, r.bly);
-  const tr = new Vec(r.blx + r.sizew, r.bly - r.sizeh);
+  const bl = new Vec(r.tlx, r.tly + r.sizeh);
+  const tr = new Vec(r.tlx + r.sizew, r.tly);
   const blDomain = r.domain === "free" ? new Vec(0, canvasSize.y) : bl;
   const trDomain = r.domain === "free" ? new Vec(canvasSize.x, 0) : tr;
   return new Region(

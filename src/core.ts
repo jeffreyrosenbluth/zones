@@ -4,8 +4,8 @@ import { createNoise2D } from "./simplex";
 
 export type RegionSettings = {
   visible: boolean;
-  blx: number;
-  bly: number;
+  tlx: number;
+  tly: number;
   sizew: number;
   sizeh: number;
   domain: string;
