@@ -50,12 +50,21 @@ export default function App() {
   const [colorPickerVisible, setColorPickerVisible] = useState<boolean[]>(
     Array(16).fill(false)
   );
-  const { openCanvasWindow } = useCanvasWindow();
+  const { openCanvasWindow, newWindowRef } = useCanvasWindow();
 
   const handleKeyPress = (event: KeyboardEvent) => {
     if (event.key === "c") {
-      // Detect if the 'c' key is pressed
       openCanvasWindow();
+    }
+  };
+
+  const sendMessageToCanvas = (updatedSettings: RegionSettings[]) => {
+    if (newWindowRef.current) {
+      // Use postMessage to send region settings to the canvas window
+      newWindowRef.current.postMessage(
+        { type: "updateSettings", payload: updatedSettings },
+        "*"
+      );
     }
   };
 
@@ -68,6 +77,10 @@ export default function App() {
       window.removeEventListener("keydown", handleKeyPress);
     };
   }, []);
+
+  useEffect(() => {
+    sendMessageToCanvas(controls);
+  }, [controls]);
 
   const handleControlChange = (
     index: number,
@@ -103,13 +116,14 @@ export default function App() {
             key={index}
             className="border-solid border-slate-600 border-2 rounded-none p-2 bg-background shadow-md dark:bg-background dark:text-card-foreground"
           >
-            <p className="flex flex-row justify-center font-bold mb-2 text-orange-500">
-              Zone {index + 1}
-            </p>
-
             {/* Visibility Control using Shadcn Switch */}
             <div className="flex items-center justify-between mb-2">
-              <Label htmlFor={`visible-switch-${index}`}>Visible</Label>
+              <Label
+                className="font-semibold text-orange-500"
+                htmlFor={`visible-switch-${index}`}
+              >
+                Zone {index + 1}
+              </Label>
               <Switch
                 className="data-[state=checked]:bg-green-500 data-[state=unchecked]:bg-amber-800"
                 id={`visible-switch-${index}`}
@@ -301,9 +315,7 @@ export default function App() {
                 className="w-full  bg-slate-600 text-white hover:bg-slate-500"
                 onClick={() => toggleColorPicker(index)}
               >
-                {colorPickerVisible[index]
-                  ? "Close Color Picker"
-                  : "Color Picker"}
+                {colorPickerVisible[index] ? "Close" : "Color"}
               </Button>
               {colorPickerVisible[index] && (
                 <ChromePicker

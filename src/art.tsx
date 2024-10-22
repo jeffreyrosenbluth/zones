@@ -1,11 +1,18 @@
 import { useRef } from "react";
+import { Vec } from "./vec";
+import { Region, RegionSettings, direction } from "./core";
 
 export default function useCanvasWindow() {
   const newWindowRef = useRef<Window | null>(null);
 
   const openCanvasWindow = () => {
+    const width = screen.width;
+    const height = screen.height;
+    const windowFeatures = `width=${
+      width / 2
+    },height=${height},menubar=no,toolbar=no,location=no,status=no`;
     // Open a new window
-    newWindowRef.current = window.open("", "Canvas", "width=1080,height=1080");
+    newWindowRef.current = window.open("", "_blank", windowFeatures);
 
     if (newWindowRef.current) {
       // Add HTML structure
@@ -14,7 +21,7 @@ export default function useCanvasWindow() {
         <!DOCTYPE html>
         <html lang="en">
           <head>
-            <title>Canvas Window</title>
+            <title>Canvas</title>
             <style>
               body, html {
                 margin: 0;
@@ -36,39 +43,86 @@ export default function useCanvasWindow() {
         </html>
       `);
 
-      doc.close(); // Close the document after writing the HTML
+      doc.close();
 
-      // Set up canvas after the new window is fully loaded
       newWindowRef.current.onload = () => {
         const canvas = doc.getElementById("canvas") as HTMLCanvasElement;
         if (canvas) {
           const ctx = canvas.getContext("2d");
           canvas.width = newWindowRef.current?.innerWidth || 1080;
           canvas.height = newWindowRef.current?.innerHeight || 1080;
-
-          // Example animation: bouncing circle
-          let x = 100,
-            y = 100,
-            dx = 2,
-            dy = 2;
-          function animate() {
-            ctx?.clearRect(0, 0, canvas.width, canvas.height);
-            ctx?.beginPath();
-            ctx?.arc(x, y, 30, 0, Math.PI * 2, false);
-            ctx!.fillStyle = "blue";
-            ctx?.fill();
-            ctx?.stroke();
-            x += dx;
-            y += dy;
-            if (x + 30 > canvas.width || x - 30 < 0) dx = -dx;
-            if (y + 30 > canvas.height || y - 30 < 0) dy = -dy;
-            requestAnimationFrame(animate);
-          }
-          animate();
+          setup(canvas, ctx!, newWindowRef.current!);
         }
       };
     }
   };
 
-  return { openCanvasWindow };
+  return { openCanvasWindow, newWindowRef };
+}
+
+function setup(
+  canvas: HTMLCanvasElement,
+  ctx: CanvasRenderingContext2D,
+  canvasWindow: Window
+) {
+  let regions: Region[] = [];
+  let id: number;
+  ctx.fillStyle = "#000000";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  canvasWindow.addEventListener("message", (event) => {
+    if (event.data && event.data.type === "updateSettings") {
+      const settings: RegionSettings[] = event.data.payload;
+      regions = settings.map((s) => region(s, resizeCanvas()));
+      if (id) {
+        cancelAnimationFrame(id);
+      }
+      ctx.fillStyle = "#000000";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      id = window.requestAnimationFrame(draw);
+    }
+  });
+
+  function resizeCanvas() {
+    const windowWidth = canvasWindow.innerWidth || screen.width;
+    const windowHeight = canvasWindow.innerHeight || screen.height;
+
+    canvas.width = Math.floor(windowWidth * window.devicePixelRatio);
+    canvas.height = Math.floor(windowHeight * window.devicePixelRatio);
+
+    canvas.style.width = windowWidth + "px";
+    canvas.style.height = windowHeight + "px";
+
+    if (ctx) ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+    return new Vec(windowWidth, windowHeight);
+  }
+
+  function draw() {
+    ctx.fillStyle = "#00000009";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    for (const r of regions) {
+      r.update();
+      r.draw(ctx);
+    }
+    id = window.requestAnimationFrame(draw);
+  }
+}
+
+function region(r: RegionSettings, canvasSize: Vec): Region {
+  if (!r.visible) return Region.emptyRegion();
+  const bl = new Vec(r.blx, r.bly);
+  const tr = new Vec(r.blx + r.sizew, r.bly - r.sizeh);
+  const blDomain = r.domain === "free" ? new Vec(0, canvasSize.y) : bl;
+  const trDomain = r.domain === "free" ? new Vec(canvasSize.x, 0) : tr;
+  return new Region(
+    r.radius,
+    r.color,
+    bl,
+    tr,
+    blDomain,
+    trDomain,
+    r.count,
+    direction(r.posFn, r.dirx, r.diry)
+  );
 }
