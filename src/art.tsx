@@ -73,7 +73,7 @@ function setup(
   canvasWindow.addEventListener("message", (event) => {
     if (event.data && event.data.type === "updateSettings") {
       const settings: RegionSettings[] = event.data.payload;
-      regions = settings.map((s) => region(s, resizeCanvas()));
+      regions = settings.map((s) => region(s));
       if (id) {
         cancelAnimationFrame(id);
       }
@@ -83,24 +83,21 @@ function setup(
     }
   });
 
-  function resizeCanvas() {
-    const windowWidth = canvasWindow.innerWidth || screen.width;
-    const windowHeight = canvasWindow.innerHeight || screen.height;
+  // function resizeCanvas() {
+  //   const windowWidth = canvasWindow.innerWidth || screen.width;
+  //   const windowHeight = canvasWindow.innerHeight || screen.height;
 
-    canvas.width = Math.floor(windowWidth * window.devicePixelRatio);
-    canvas.height = Math.floor(windowHeight * window.devicePixelRatio);
+  //   canvas.width = Math.floor(windowWidth * window.devicePixelRatio);
+  //   canvas.height = Math.floor(windowHeight * window.devicePixelRatio);
 
-    canvas.style.width = windowWidth + "px";
-    canvas.style.height = windowHeight + "px";
+  //   canvas.style.width = windowWidth + "px";
+  //   canvas.style.height = windowHeight + "px";
 
-    if (ctx) ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
-    return new Vec(windowWidth, windowHeight);
-  }
+  //   if (ctx) ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+  //   return new Vec(windowWidth, windowHeight);
+  // }
 
   function draw() {
-    ctx.fillStyle = "#00000009";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
     for (const r of regions) {
       r.update();
       r.draw(ctx);
@@ -109,20 +106,17 @@ function setup(
   }
 }
 
-function region(r: RegionSettings, canvasSize: Vec): Region {
+function region(r: RegionSettings): Region {
   if (!r.visible) return Region.emptyRegion();
   const bl = new Vec(r.tlx, r.tly + r.sizeh);
   const tr = new Vec(r.tlx + r.sizew, r.tly);
-  const blDomain = r.domain === "free" ? new Vec(0, canvasSize.y) : bl;
-  const trDomain = r.domain === "free" ? new Vec(canvasSize.x, 0) : tr;
   return new Region(
     r.radius,
     r.color,
     bl,
     tr,
-    blDomain,
-    trDomain,
     r.count,
+    r.tail,
     direction(r.posFn, r.dirx, r.diry)
   );
 }

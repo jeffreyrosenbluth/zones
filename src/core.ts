@@ -8,13 +8,13 @@ export type RegionSettings = {
   tly: number;
   sizew: number;
   sizeh: number;
-  domain: string;
   radius: number;
   count: number;
   posFn: string;
   dirx: number;
   diry: number;
   color: string;
+  tail: number;
 };
 
 // Particle position functions -------------------------------------------------
@@ -79,11 +79,10 @@ export class Region {
   public color: string;
   public bottomLeft: Vec;
   public topRight: Vec;
-  public domainBL: Vec;
-  public domainTR: Vec;
   public width: number;
   public height: number;
   public count: number;
+  public tail: number = 245;
   public positions: Vec[];
   public posFn: (p: Vec) => Vec;
 
@@ -92,20 +91,18 @@ export class Region {
     color: string,
     bottomLeft: Vec,
     topRight: Vec,
-    domainBL: Vec,
-    domainTR: Vec,
     count: number,
+    tail: number,
     posFn: (p: Vec) => Vec
   ) {
     this.radius = radius;
     this.color = color;
     this.bottomLeft = bottomLeft;
     this.topRight = topRight;
-    this.domainBL = domainBL;
-    this.domainTR = domainTR;
     this.width = topRight.x - bottomLeft.x;
     this.height = -topRight.y + bottomLeft.y;
     this.count = count;
+    this.tail = tail;
     this.positions = Array.from(
       { length: count },
       () =>
@@ -123,8 +120,7 @@ export class Region {
       "black",
       new Vec(0, 0),
       new Vec(0, 0),
-      new Vec(0, 0),
-      new Vec(0, 0),
+      0,
       0,
       simplePosFn
     );
@@ -134,22 +130,31 @@ export class Region {
     this.positions.forEach((pos, index) => {
       this.positions[index] = this.posFn(pos);
 
-      if (this.positions[index].x < this.domainBL.x + this.radius) {
-        this.positions[index].x = this.domainTR.x - this.radius;
+      if (this.positions[index].x < this.bottomLeft.x + this.radius) {
+        this.positions[index].x = this.topRight.x - this.radius;
       }
-      if (this.positions[index].x > this.domainTR.x - this.radius) {
-        this.positions[index].x = this.domainBL.x + this.radius;
+      if (this.positions[index].x > this.topRight.x - this.radius) {
+        this.positions[index].x = this.bottomLeft.x + this.radius;
       }
-      if (this.positions[index].y > this.domainBL.y - this.radius) {
-        this.positions[index].y = this.domainTR.y + this.radius;
+      if (this.positions[index].y > this.bottomLeft.y - this.radius) {
+        this.positions[index].y = this.topRight.y + this.radius;
       }
-      if (this.positions[index].y < this.domainTR.y + this.radius) {
-        this.positions[index].y = this.domainBL.y - this.radius;
+      if (this.positions[index].y < this.topRight.y + this.radius) {
+        this.positions[index].y = this.bottomLeft.y - this.radius;
       }
     });
   }
 
   draw(ctx: CanvasRenderingContext2D) {
+    ctx.fillStyle = "#000000";
+    ctx.globalAlpha = Math.exp(-this.tail / 20);
+    ctx.fillRect(
+      this.bottomLeft.x,
+      this.bottomLeft.y - this.height,
+      this.width,
+      this.height
+    );
+    ctx.globalAlpha = 1;
     for (const pos of this.positions) {
       ctx.beginPath();
       ctx.fillStyle = this.color;

@@ -13,7 +13,6 @@ import {
 import { Slider } from "@/components/ui/slider";
 import { ChromePicker, ColorResult } from "react-color";
 import { Switch } from "@/components/ui/switch";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Separator } from "@/components/ui/separator";
 import { Input } from "@/components/ui/input";
 
@@ -29,15 +28,15 @@ const initialControls: RegionSettings[] = Array(16).fill({
   visible: false,
   tlx: 0,
   tly: 0,
-  sizew: 270,
-  sizeh: 270,
-  domain: "constrained",
+  sizew: 500,
+  sizeh: 500,
   radius: 1,
   count: 1000,
   posFn: "simple",
   dirx: 1,
   diry: 0,
-  color: "rgba(255, 255, 255, 0.5)",
+  color: "rgba(255, 255, 255, 1)",
+  tail: 50,
 });
 
 export default function App() {
@@ -259,36 +258,8 @@ export default function App() {
                 step={10}
               />
             </div>
-            <Separator className="bg-stone-300 my-2" />
-            {/* Domain Radio Group */}
-            <div className="mt-1 flex items-center justify-center p-1">
-              {/* <Label className="w-32">Domain</Label> */}
-              <RadioGroup
-                value={control.domain}
-                onValueChange={(value) =>
-                  handleControlChange(index, "domain", value)
-                }
-                className="flex space-x-4" // This makes the radio buttons appear in one line
-              >
-                <RadioGroupItem
-                  value="constrained"
-                  id={`constrained-${index}`}
-                  className="bg-stone-700"
-                />
-                <Label htmlFor={`constrained-${index}`} className="mr-4">
-                  Constrained
-                </Label>
 
-                <RadioGroupItem
-                  value="free"
-                  id={`free-${index}`}
-                  className="bg-stone-700"
-                />
-                <Label htmlFor={`free-${index}`}>Free</Label>
-              </RadioGroup>
-            </div>
-
-            <Separator className="bg-stone-300 my-2" />
+            <Separator className="bg-stone-300 my-3" />
             {/* Radius Slider */}
             <div className="mt-1 flex items-center justify-stretch gap-2">
               <Label className="w-20">Radius</Label>{" "}
@@ -355,6 +326,41 @@ export default function App() {
               />
             </div>
 
+            {/* Tail Slider */}
+            <div className="mt-1 flex items-center justify-stretch gap-2">
+              <Label className="w-20">Trail</Label>{" "}
+              <Slider
+                className="w-full"
+                value={[control.tail]}
+                min={0}
+                max={100}
+                step={1}
+                onValueChange={(value) =>
+                  handleControlChange(index, "tail", value[0])
+                }
+              />
+              <Input
+                type="number"
+                className="w-20 h-7 bg-stone-700 rounded-none"
+                value={control.tail}
+                onChange={(e) => {
+                  const value = parseFloat(e.target.value);
+                  if (!isNaN(value)) {
+                    handleControlChange(
+                      index,
+                      "tail",
+                      Math.min(Math.max(value, 0), 100)
+                    );
+                  }
+                }}
+                min={0}
+                max={100}
+                step={1}
+              />
+            </div>
+
+            <Separator className="bg-stone-300 my-3" />
+
             {/* Movement Select */}
             <div className="mt-1 flex items-center justify-between">
               <Label className="w-32">Movement</Label>{" "}
@@ -379,6 +385,7 @@ export default function App() {
                     <SelectItem value="cosX">Sinusoid Vertical</SelectItem>
                     <SelectItem value="cosXY">Sinusoid</SelectItem>
                     <SelectItem value="direction">Direction</SelectItem>
+                    <SelectItem value="still">Still</SelectItem>
                   </SelectGroup>
                 </SelectContent>
               </Select>
