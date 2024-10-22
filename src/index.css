@@ -18,7 +18,7 @@ html {
   align-items: center; /* Center content vertically */
   min-width: 320px;
   min-height: 100vh;
-  background-color: #0f172a; /* Always dark background */
+  background-color: #1c1917; /* Always dark background */
   color: white; /* White text to ensure readability */
 }
 
@@ -52,7 +52,7 @@ a:hover {
 /* Dark Mode */
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: 222 47% 11%;
+    --background: 24 10% 10%;
     --foreground: 210 40% 98%;
   }
   a:hover {
