@@ -455,7 +455,7 @@ export default function App() {
             {/* Color Picker Toggle */}
             <Collapsible className="mt-2 py-1 mr-32">
               <CollapsibleTrigger className="flex w-full h-8 items-center justify-between border border-stone-400 border-solid px-4 py-2 text-white hover:bg-stone-600">
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 text-sm">
                   Color
                   <div
                     className="h-4 w-4 ml-3 "
