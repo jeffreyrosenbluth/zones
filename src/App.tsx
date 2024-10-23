@@ -503,26 +503,37 @@ export default function App() {
                   <Label className="w-48">x-direction</Label>{" "}
                   <Slider
                     className="w-full"
-                    value={[control.dirx]}
+                    value={[localControls[index]?.dirx ?? control.dirx]}
                     min={-5}
                     max={5}
                     step={0.1}
-                    onValueChange={(value) =>
+                    onValueChange={(value) => {
+                      const newLocalControls = [...localControls];
+                      newLocalControls[index] = {
+                        ...newLocalControls[index],
+                        dirx: value[0],
+                      };
+                      setLocalControls(newLocalControls);
+                    }}
+                    onValueCommit={(value) =>
                       handleControlChange(index, "dirx", value[0])
                     }
                   />
                   <Input
                     type="number"
                     className="w-20 h-7 bg-stone-700 rounded-none"
-                    value={control.dirx}
+                    value={localControls[index]?.dirx ?? control.dirx}
                     onChange={(e) => {
                       const value = parseFloat(e.target.value);
                       if (!isNaN(value)) {
-                        handleControlChange(
-                          index,
-                          "dirx",
-                          Math.min(Math.max(value, -5), 5)
-                        );
+                        const clampedValue = Math.min(Math.max(value, -5), 5);
+                        const newLocalControls = [...localControls];
+                        newLocalControls[index] = {
+                          ...newLocalControls[index],
+                          dirx: clampedValue,
+                        };
+                        setLocalControls(newLocalControls);
+                        handleControlChange(index, "dirx", clampedValue);
                       }
                     }}
                     min={-5}
@@ -530,30 +541,42 @@ export default function App() {
                     step={0.1}
                   />
                 </div>
+
                 <div className="mt-1 flex items-center justify-stretch gap-2">
                   <Label className="w-48">y-direction</Label>{" "}
                   <Slider
                     className="w-full"
-                    value={[control.diry]}
+                    value={[localControls[index]?.diry ?? control.diry]}
                     min={-5}
                     max={5}
                     step={0.1}
-                    onValueChange={(value) =>
+                    onValueChange={(value) => {
+                      const newLocalControls = [...localControls];
+                      newLocalControls[index] = {
+                        ...newLocalControls[index],
+                        diry: value[0],
+                      };
+                      setLocalControls(newLocalControls);
+                    }}
+                    onValueCommit={(value) =>
                       handleControlChange(index, "diry", value[0])
                     }
                   />
                   <Input
                     type="number"
                     className="w-20 h-7 bg-stone-700 rounded-none"
-                    value={control.diry}
+                    value={localControls[index]?.diry ?? control.diry}
                     onChange={(e) => {
                       const value = parseFloat(e.target.value);
                       if (!isNaN(value)) {
-                        handleControlChange(
-                          index,
-                          "diry",
-                          Math.min(Math.max(value, -5), 5)
-                        );
+                        const clampedValue = Math.min(Math.max(value, -5), 5);
+                        const newLocalControls = [...localControls];
+                        newLocalControls[index] = {
+                          ...newLocalControls[index],
+                          diry: clampedValue,
+                        };
+                        setLocalControls(newLocalControls);
+                        handleControlChange(index, "diry", clampedValue);
                       }
                     }}
                     min={-5}
