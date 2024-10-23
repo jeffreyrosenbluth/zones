@@ -83,20 +83,6 @@ function setup(
     }
   });
 
-  // function resizeCanvas() {
-  //   const windowWidth = canvasWindow.innerWidth || screen.width;
-  //   const windowHeight = canvasWindow.innerHeight || screen.height;
-
-  //   canvas.width = Math.floor(windowWidth * window.devicePixelRatio);
-  //   canvas.height = Math.floor(windowHeight * window.devicePixelRatio);
-
-  //   canvas.style.width = windowWidth + "px";
-  //   canvas.style.height = windowHeight + "px";
-
-  //   if (ctx) ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
-  //   return new Vec(windowWidth, windowHeight);
-  // }
-
   function draw() {
     for (const r of regions) {
       r.update();

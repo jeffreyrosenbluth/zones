@@ -1,7 +1,9 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { useEffect } from "react";
 import useCanvasWindow from "@/art";
 import { useState } from "react";
 import { Label } from "@/components/ui/label";
+
 import {
   Select,
   SelectTrigger,
@@ -10,6 +12,7 @@ import {
   SelectGroup,
   SelectItem,
 } from "@/components/ui/select";
+
 import { Slider } from "@/components/ui/slider";
 import { ChromePicker, ColorResult } from "react-color";
 import { Switch } from "@/components/ui/switch";
@@ -41,6 +44,11 @@ const initialControls: RegionSettings[] = Array(16).fill({
 
 export default function App() {
   const [controls, setControls] = useState<RegionSettings[]>(initialControls);
+
+  const [localControls, setLocalControls] = useState<
+    { [key: string]: number }[]
+  >(controls.map(() => ({})));
+
   const [colorPickerVisible] = useState<boolean[]>(Array(16).fill(false));
   const { openCanvasWindow, newWindowRef } = useCanvasWindow();
 
@@ -86,6 +94,23 @@ export default function App() {
     };
     setControls(updatedControls);
   };
+
+  useEffect(() => {
+    setLocalControls(
+      controls.map((control) => ({
+        tlx: control.tlx,
+        tly: control.tly,
+        sizew: control.sizew,
+        sizeh: control.sizeh,
+        radius: control.radius,
+        count: control.count,
+        tail: control.tail,
+        dirx: control.dirx,
+        diry: control.diry,
+      }))
+    );
+  }, [controls]);
+
   const handleColorChange = (index: number, color: ColorResult) => {
     const rgbaColor = `rgba(${color.rgb.r}, ${color.rgb.g}, ${color.rgb.b}, ${color.rgb.a})`;
     handleControlChange(index, "color", rgbaColor);
@@ -100,12 +125,12 @@ export default function App() {
         {controls.map((control, index) => (
           <div
             key={index}
-            className="border-solid border-rose-400 border-2 rounded-none p-2 bg-background shadow-md dark:bg-background dark:text-card-foreground"
+            className="border-solid border-amber-500 border-2 rounded-none p-2 bg-background shadow-md dark:bg-background dark:text-card-foreground"
           >
             {/* Visibility Control using Shadcn Switch */}
             <div className="flex gap-4 items-center justify-center mb-1">
               <Label
-                className="font-black text-rose-500"
+                className="font-black text-amber-500"
                 htmlFor={`visible-switch-${index}`}
               >
                 ZONE {index + 1}
@@ -125,26 +150,40 @@ export default function App() {
               <Label className="w-20">x</Label>{" "}
               <Slider
                 className="w-full"
-                value={[control.tlx]}
+                value={[localControls[index]?.tlx ?? control.tlx]}
                 min={0}
                 max={newWindowRef.current?.innerWidth || 1080}
                 step={10}
-                onValueChange={(value) =>
+                onValueChange={(value) => {
+                  const newLocalControls = [...localControls];
+                  newLocalControls[index] = {
+                    ...newLocalControls[index],
+                    tlx: value[0],
+                  };
+                  setLocalControls(newLocalControls);
+                }}
+                onValueCommit={(value) =>
                   handleControlChange(index, "tlx", value[0])
                 }
               />
               <Input
                 type="number"
                 className="w-20 h-7 bg-stone-700 rounded-none"
-                value={control.tlx}
+                value={localControls[index]?.tlx ?? control.tlx}
                 onChange={(e) => {
                   const value = parseFloat(e.target.value);
                   if (!isNaN(value)) {
-                    handleControlChange(
-                      index,
-                      "tlx",
-                      Math.min(Math.max(value, 0), 10000)
+                    const clampedValue = Math.min(
+                      Math.max(value, 0),
+                      newWindowRef.current?.innerWidth || 1080
                     );
+                    const newLocalControls = [...localControls];
+                    newLocalControls[index] = {
+                      ...newLocalControls[index],
+                      tlx: clampedValue,
+                    };
+                    setLocalControls(newLocalControls);
+                    handleControlChange(index, "tlx", clampedValue);
                   }
                 }}
                 min={0}
@@ -157,33 +196,44 @@ export default function App() {
               <Label className="w-20">y</Label>{" "}
               <Slider
                 className="w-full"
-                value={[control.tly]}
+                value={[localControls[index]?.tly ?? control.tly]}
                 min={0}
-                max={newWindowRef.current?.innerHeight || 1080}
+                max={newWindowRef.current?.innerWidth || 1080}
                 step={10}
-                onValueChange={(value) =>
+                onValueChange={(value) => {
+                  const newLocalControls = [...localControls];
+                  newLocalControls[index] = {
+                    ...newLocalControls[index],
+                    tly: value[0],
+                  };
+                  setLocalControls(newLocalControls);
+                }}
+                onValueCommit={(value) =>
                   handleControlChange(index, "tly", value[0])
                 }
               />
               <Input
                 type="number"
                 className="w-20 h-7 bg-stone-700 rounded-none"
-                value={control.tly}
+                value={localControls[index]?.tly ?? control.tly}
                 onChange={(e) => {
                   const value = parseFloat(e.target.value);
                   if (!isNaN(value)) {
-                    handleControlChange(
-                      index,
-                      "tly",
-                      Math.min(
-                        Math.max(value, 0),
-                        newWindowRef.current?.innerHeight || 1080
-                      )
+                    const clampedValue = Math.min(
+                      Math.max(value, 0),
+                      newWindowRef.current?.innerHeight || 1080
                     );
+                    const newLocalControls = [...localControls];
+                    newLocalControls[index] = {
+                      ...newLocalControls[index],
+                      tly: clampedValue,
+                    };
+                    setLocalControls(newLocalControls);
+                    handleControlChange(index, "tly", clampedValue);
                   }
                 }}
                 min={0}
-                max={newWindowRef.current?.innerWidth || 1080}
+                max={newWindowRef.current?.innerHeight || 1080}
                 step={10}
               />
             </div>
@@ -193,29 +243,40 @@ export default function App() {
               <Label className="w-20">Width</Label>{" "}
               <Slider
                 className="w-full"
-                value={[control.sizew]}
-                min={100}
+                value={[localControls[index]?.sizew ?? control.sizew]}
+                min={0}
                 max={newWindowRef.current?.innerWidth || 1080}
                 step={10}
-                onValueChange={(value) =>
+                onValueChange={(value) => {
+                  const newLocalControls = [...localControls];
+                  newLocalControls[index] = {
+                    ...newLocalControls[index],
+                    sizew: value[0],
+                  };
+                  setLocalControls(newLocalControls);
+                }}
+                onValueCommit={(value) =>
                   handleControlChange(index, "sizew", value[0])
                 }
               />
               <Input
                 type="number"
                 className="w-20 h-7 bg-stone-700 rounded-none"
-                value={control.sizew}
+                value={localControls[index]?.sizew ?? control.sizew}
                 onChange={(e) => {
                   const value = parseFloat(e.target.value);
                   if (!isNaN(value)) {
-                    handleControlChange(
-                      index,
-                      "sizew",
-                      Math.min(
-                        Math.max(value, 0),
-                        newWindowRef.current?.innerWidth || 1080
-                      )
+                    const clampedValue = Math.min(
+                      Math.max(value, 0),
+                      newWindowRef.current?.innerWidth || 1080
                     );
+                    const newLocalControls = [...localControls];
+                    newLocalControls[index] = {
+                      ...newLocalControls[index],
+                      sizew: clampedValue,
+                    };
+                    setLocalControls(newLocalControls);
+                    handleControlChange(index, "sizew", clampedValue);
                   }
                 }}
                 min={0}
@@ -228,29 +289,40 @@ export default function App() {
               <Label className="w-20">Height</Label>{" "}
               <Slider
                 className="w-full"
-                value={[control.sizeh]}
-                min={100}
+                value={[localControls[index]?.sizeh ?? control.sizeh]}
+                min={0}
                 max={newWindowRef.current?.innerHeight || 1080}
                 step={10}
-                onValueChange={(value) =>
+                onValueChange={(value) => {
+                  const newLocalControls = [...localControls];
+                  newLocalControls[index] = {
+                    ...newLocalControls[index],
+                    sizeh: value[0],
+                  };
+                  setLocalControls(newLocalControls);
+                }}
+                onValueCommit={(value) =>
                   handleControlChange(index, "sizeh", value[0])
                 }
               />
               <Input
                 type="number"
                 className="w-20 h-7 bg-stone-700 rounded-none"
-                value={control.sizeh}
+                value={localControls[index]?.sizeh ?? control.sizeh}
                 onChange={(e) => {
                   const value = parseFloat(e.target.value);
                   if (!isNaN(value)) {
-                    handleControlChange(
-                      index,
-                      "sizeh",
-                      Math.min(
-                        Math.max(value, 0),
-                        newWindowRef.current?.innerHeight || 1080
-                      )
+                    const clampedValue = Math.min(
+                      Math.max(value, 0),
+                      newWindowRef.current?.innerHeight || 1080
                     );
+                    const newLocalControls = [...localControls];
+                    newLocalControls[index] = {
+                      ...newLocalControls[index],
+                      sizeh: clampedValue,
+                    };
+                    setLocalControls(newLocalControls);
+                    handleControlChange(index, "sizeh", clampedValue);
                   }
                 }}
                 min={0}
@@ -265,26 +337,37 @@ export default function App() {
               <Label className="w-20">Radius</Label>{" "}
               <Slider
                 className="w-full"
-                value={[control.radius]}
+                value={[localControls[index]?.radius ?? control.radius]}
                 min={0.5}
                 max={10}
                 step={0.5}
-                onValueChange={(value) =>
+                onValueChange={(value) => {
+                  const newLocalControls = [...localControls];
+                  newLocalControls[index] = {
+                    ...newLocalControls[index],
+                    radius: value[0],
+                  };
+                  setLocalControls(newLocalControls);
+                }}
+                onValueCommit={(value) =>
                   handleControlChange(index, "radius", value[0])
                 }
               />
               <Input
                 type="number"
                 className="w-20 h-7 bg-stone-700 rounded-none"
-                value={control.radius}
+                value={localControls[index]?.radius ?? control.radius}
                 onChange={(e) => {
                   const value = parseFloat(e.target.value);
                   if (!isNaN(value)) {
-                    handleControlChange(
-                      index,
-                      "radius",
-                      Math.min(Math.max(value, 0), 10)
-                    );
+                    const clampedValue = Math.min(Math.max(value, 0), 10);
+                    const newLocalControls = [...localControls];
+                    newLocalControls[index] = {
+                      ...newLocalControls[index],
+                      radius: clampedValue,
+                    };
+                    setLocalControls(newLocalControls);
+                    handleControlChange(index, "radius", clampedValue);
                   }
                 }}
                 min={0.5}
@@ -298,26 +381,37 @@ export default function App() {
               <Label className="w-20">Count</Label>{" "}
               <Slider
                 className="w-full"
-                value={[control.count]}
+                value={[localControls[index]?.count ?? control.count]}
                 min={0}
                 max={9999}
                 step={100}
-                onValueChange={(value) =>
+                onValueChange={(value) => {
+                  const newLocalControls = [...localControls];
+                  newLocalControls[index] = {
+                    ...newLocalControls[index],
+                    count: value[0],
+                  };
+                  setLocalControls(newLocalControls);
+                }}
+                onValueCommit={(value) =>
                   handleControlChange(index, "count", value[0])
                 }
               />
               <Input
                 type="number"
                 className="w-20 h-7 bg-stone-700 rounded-none"
-                value={control.count}
+                value={localControls[index]?.count ?? control.count}
                 onChange={(e) => {
                   const value = parseFloat(e.target.value);
                   if (!isNaN(value)) {
-                    handleControlChange(
-                      index,
-                      "count",
-                      Math.min(Math.max(value, 0), 9999)
-                    );
+                    const clampedValue = Math.min(Math.max(value, 0), 9999);
+                    const newLocalControls = [...localControls];
+                    newLocalControls[index] = {
+                      ...newLocalControls[index],
+                      count: clampedValue,
+                    };
+                    setLocalControls(newLocalControls);
+                    handleControlChange(index, "count", clampedValue);
                   }
                 }}
                 min={0}
@@ -331,26 +425,37 @@ export default function App() {
               <Label className="w-20">Trail</Label>{" "}
               <Slider
                 className="w-full"
-                value={[control.tail]}
+                value={[localControls[index]?.tail ?? control.tail]}
                 min={0}
                 max={100}
                 step={1}
-                onValueChange={(value) =>
+                onValueChange={(value) => {
+                  const newLocalControls = [...localControls];
+                  newLocalControls[index] = {
+                    ...newLocalControls[index],
+                    tail: value[0],
+                  };
+                  setLocalControls(newLocalControls);
+                }}
+                onValueCommit={(value) =>
                   handleControlChange(index, "tail", value[0])
                 }
               />
               <Input
                 type="number"
                 className="w-20 h-7 bg-stone-700 rounded-none"
-                value={control.tail}
+                value={localControls[index]?.tail ?? control.tail}
                 onChange={(e) => {
                   const value = parseFloat(e.target.value);
                   if (!isNaN(value)) {
-                    handleControlChange(
-                      index,
-                      "tail",
-                      Math.min(Math.max(value, 0), 100)
-                    );
+                    const clampedValue = Math.min(Math.max(value, 0), 100);
+                    const newLocalControls = [...localControls];
+                    newLocalControls[index] = {
+                      ...newLocalControls[index],
+                      tail: clampedValue,
+                    };
+                    setLocalControls(newLocalControls);
+                    handleControlChange(index, "tail", clampedValue);
                   }
                 }}
                 min={0}
