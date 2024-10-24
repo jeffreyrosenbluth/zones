@@ -57,7 +57,8 @@ const perlin = new PerlinNoise();
 function flowFieldPosFn(p: Vec, c?: number) {
   const scale = 0.02;
   const t = (c || 0) / 49.37;
-  const theta = Math.PI * perlin.noise(scale * p.x, scale * p.y, t);
+  const theta =
+    Math.PI * perlin.noise(scale * p.x, scale * p.y, t + Math.random());
   return p.add(new Vec(Math.cos(theta), Math.sin(theta)));
 }
 

@@ -68,6 +68,11 @@ function setup(
   let regions: Region[] = [];
   let id: number;
 
+  const devicePixelRatio = window.devicePixelRatio || 1;
+  canvas.width = canvas.width * devicePixelRatio;
+  canvas.height = canvas.height * devicePixelRatio;
+  ctx.scale(devicePixelRatio, devicePixelRatio);
+
   ctx.fillStyle = "#000000";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
