@@ -1,6 +1,6 @@
 import { useRef } from "react";
 import { Vec } from "./vec";
-import { Region, RegionSettings, direction } from "./core";
+import { Region, RegionSettings, movement } from "./core";
 
 export default function useCanvasWindow() {
   const newWindowRef = useRef<Window | null>(null);
@@ -11,7 +11,7 @@ export default function useCanvasWindow() {
     const windowFeatures = `width=${
       width / 2
     },height=${height},menubar=no,toolbar=no,location=no,status=no`;
-    // Open a new window
+
     newWindowRef.current = window.open("", "_blank", windowFeatures);
 
     if (newWindowRef.current) {
@@ -67,6 +67,7 @@ function setup(
 ) {
   let regions: Region[] = [];
   let id: number;
+
   ctx.fillStyle = "#000000";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -103,6 +104,6 @@ function region(r: RegionSettings): Region {
     tr,
     r.count,
     r.tail,
-    direction(r.posFn, r.dirx, r.diry)
+    movement(r.posFn, r.dirx, r.diry)
   );
 }

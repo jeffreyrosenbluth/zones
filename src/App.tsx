@@ -250,11 +250,12 @@ export default function App() {
                     <SelectItem value="studentt">
                       t-distribution walk
                     </SelectItem>
-                    <SelectItem value="simplex">Flow Field</SelectItem>
+                    <SelectItem value="simplex">Swirl</SelectItem>
                     <SelectItem value="cosY">Sinusoid Horizontal</SelectItem>
                     <SelectItem value="cosX">Sinusoid Vertical</SelectItem>
                     <SelectItem value="cosXY">Sinusoid</SelectItem>
                     <SelectItem value="direction">Direction</SelectItem>
+                    <SelectItem value="flowfield">Flow</SelectItem>
                     <SelectItem value="still">Still</SelectItem>
                   </SelectGroup>
                 </SelectContent>

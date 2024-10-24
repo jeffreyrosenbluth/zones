@@ -1,6 +1,7 @@
 import { Vec } from "./vec";
 import { StudentTDistribution } from "./studentt";
 import { createNoise2D } from "./simplex";
+import { PerlinNoise } from "./perlin";
 
 export type RegionSettings = {
   visible: boolean;
@@ -51,7 +52,16 @@ const simplexPosFn = (p: Vec) => {
   return p.add(new Vec(noiseValX, noiseValY));
 };
 
-export const direction = (posFn: string, x: number, y: number) => {
+const perlin = new PerlinNoise();
+
+function flowFieldPosFn(p: Vec, c?: number) {
+  const scale = 0.02;
+  const t = (c || 0) / 49.37;
+  const theta = Math.PI * perlin.noise(scale * p.x, scale * p.y, t);
+  return p.add(new Vec(Math.cos(theta), Math.sin(theta)));
+}
+
+export const movement = (posFn: string, x: number, y: number) => {
   switch (posFn) {
     case "still":
       return stillPosFn;
@@ -69,6 +79,8 @@ export const direction = (posFn: string, x: number, y: number) => {
       return dirPosFn(x, y);
     case "simplex":
       return simplexPosFn;
+    case "flowfield":
+      return flowFieldPosFn;
     default:
       return stillPosFn;
   }
@@ -84,7 +96,8 @@ export class Region {
   public count: number;
   public tail: number = 245;
   public positions: Vec[];
-  public posFn: (p: Vec) => Vec;
+  public frameCount: number = 0;
+  public posFn: (p: Vec, c?: number) => Vec;
 
   constructor(
     radius: number,
@@ -93,7 +106,7 @@ export class Region {
     topRight: Vec,
     count: number,
     tail: number,
-    posFn: (p: Vec) => Vec
+    posFn: (p: Vec, c?: number) => Vec
   ) {
     this.radius = radius;
     this.color = color;
@@ -112,6 +125,7 @@ export class Region {
         )
     );
     this.posFn = posFn;
+    this.frameCount = 0;
   }
 
   static emptyRegion(): Region {
@@ -127,8 +141,9 @@ export class Region {
   }
 
   update() {
+    this.frameCount += 1;
     this.positions.forEach((pos, index) => {
-      this.positions[index] = this.posFn(pos);
+      this.positions[index] = this.posFn(pos, this.frameCount);
 
       if (this.positions[index].x < this.bottomLeft.x + this.radius) {
         this.positions[index].x = this.topRight.x - this.radius;
