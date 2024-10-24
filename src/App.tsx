@@ -13,11 +13,9 @@ import {
   SelectItem,
 } from "@/components/ui/select";
 
-import { Slider } from "@/components/ui/slider";
 import { ChromePicker, ColorResult } from "react-color";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
-import { Input } from "@/components/ui/input";
 
 import {
   Collapsible,
@@ -25,6 +23,7 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { ChevronDown } from "lucide-react";
+import Numeric from "./numeric";
 import { RegionSettings } from "./core";
 
 const initialControls: RegionSettings[] = Array(16).fill({
@@ -60,7 +59,6 @@ export default function App() {
 
   const sendMessageToCanvas = (updatedSettings: RegionSettings[]) => {
     if (newWindowRef.current) {
-      // Use postMessage to send region settings to the canvas window
       newWindowRef.current.postMessage(
         { type: "updateSettings", payload: updatedSettings },
         "*"
@@ -145,324 +143,91 @@ export default function App() {
               />
             </div>
 
-            {/* x and y Sliders */}
-            <div className="mt-1 flex items-center justify-stretch gap-2">
-              <Label className="w-20">x</Label>{" "}
-              <Slider
-                className="w-full"
-                value={[localControls[index]?.tlx ?? control.tlx]}
-                min={0}
-                max={newWindowRef.current?.innerWidth || 1080}
-                step={10}
-                onValueChange={(value) => {
-                  const newLocalControls = [...localControls];
-                  newLocalControls[index] = {
-                    ...newLocalControls[index],
-                    tlx: value[0],
-                  };
-                  setLocalControls(newLocalControls);
-                }}
-                onValueCommit={(value) =>
-                  handleControlChange(index, "tlx", value[0])
-                }
-              />
-              <Input
-                type="number"
-                className="w-20 h-7 bg-stone-700 rounded-none"
-                value={localControls[index]?.tlx ?? control.tlx}
-                onChange={(e) => {
-                  const value = parseFloat(e.target.value);
-                  if (!isNaN(value)) {
-                    const clampedValue = Math.min(
-                      Math.max(value, 0),
-                      newWindowRef.current?.innerWidth || 1080
-                    );
-                    const newLocalControls = [...localControls];
-                    newLocalControls[index] = {
-                      ...newLocalControls[index],
-                      tlx: clampedValue,
-                    };
-                    setLocalControls(newLocalControls);
-                    handleControlChange(index, "tlx", clampedValue);
-                  }
-                }}
-                min={0}
-                max={newWindowRef.current?.innerWidth || 1080}
-                step={10}
-              />
-            </div>
+            {/* x  */}
+            <Numeric
+              label="x"
+              value={localControls[index]?.tlx ?? control.tlx}
+              min={0}
+              max={newWindowRef.current?.innerWidth || 1080}
+              step={10}
+              onValueChange={(value) =>
+                handleControlChange(index, "tlx", value)
+              }
+            />
 
-            <div className="mt-1 flex items-center justify-stretch gap-2">
-              <Label className="w-20">y</Label>{" "}
-              <Slider
-                className="w-full"
-                value={[localControls[index]?.tly ?? control.tly]}
-                min={0}
-                max={newWindowRef.current?.innerWidth || 1080}
-                step={10}
-                onValueChange={(value) => {
-                  const newLocalControls = [...localControls];
-                  newLocalControls[index] = {
-                    ...newLocalControls[index],
-                    tly: value[0],
-                  };
-                  setLocalControls(newLocalControls);
-                }}
-                onValueCommit={(value) =>
-                  handleControlChange(index, "tly", value[0])
-                }
-              />
-              <Input
-                type="number"
-                className="w-20 h-7 bg-stone-700 rounded-none"
-                value={localControls[index]?.tly ?? control.tly}
-                onChange={(e) => {
-                  const value = parseFloat(e.target.value);
-                  if (!isNaN(value)) {
-                    const clampedValue = Math.min(
-                      Math.max(value, 0),
-                      newWindowRef.current?.innerHeight || 1080
-                    );
-                    const newLocalControls = [...localControls];
-                    newLocalControls[index] = {
-                      ...newLocalControls[index],
-                      tly: clampedValue,
-                    };
-                    setLocalControls(newLocalControls);
-                    handleControlChange(index, "tly", clampedValue);
-                  }
-                }}
-                min={0}
-                max={newWindowRef.current?.innerHeight || 1080}
-                step={10}
-              />
-            </div>
+            {/* y  */}
+            <Numeric
+              label="y"
+              value={localControls[index]?.tly ?? control.tly}
+              min={0}
+              max={newWindowRef.current?.innerHeight || 1080}
+              step={10}
+              onValueChange={(value) =>
+                handleControlChange(index, "tly", value)
+              }
+            />
 
-            {/* Size Width and Height Sliders */}
-            <div className="mt-1 flex items-center justify-stretch gap-2">
-              <Label className="w-20">Width</Label>{" "}
-              <Slider
-                className="w-full"
-                value={[localControls[index]?.sizew ?? control.sizew]}
-                min={0}
-                max={newWindowRef.current?.innerWidth || 1080}
-                step={10}
-                onValueChange={(value) => {
-                  const newLocalControls = [...localControls];
-                  newLocalControls[index] = {
-                    ...newLocalControls[index],
-                    sizew: value[0],
-                  };
-                  setLocalControls(newLocalControls);
-                }}
-                onValueCommit={(value) =>
-                  handleControlChange(index, "sizew", value[0])
-                }
-              />
-              <Input
-                type="number"
-                className="w-20 h-7 bg-stone-700 rounded-none"
-                value={localControls[index]?.sizew ?? control.sizew}
-                onChange={(e) => {
-                  const value = parseFloat(e.target.value);
-                  if (!isNaN(value)) {
-                    const clampedValue = Math.min(
-                      Math.max(value, 0),
-                      newWindowRef.current?.innerWidth || 1080
-                    );
-                    const newLocalControls = [...localControls];
-                    newLocalControls[index] = {
-                      ...newLocalControls[index],
-                      sizew: clampedValue,
-                    };
-                    setLocalControls(newLocalControls);
-                    handleControlChange(index, "sizew", clampedValue);
-                  }
-                }}
-                min={0}
-                max={newWindowRef.current?.innerWidth || 1080}
-                step={10}
-              />
-            </div>
+            {/* Width  */}
+            <Numeric
+              label="Width"
+              value={localControls[index]?.sizew ?? control.sizew}
+              min={0}
+              max={newWindowRef.current?.innerWidth || 1080}
+              step={10}
+              onValueChange={(value) =>
+                handleControlChange(index, "sizew", value)
+              }
+            />
 
-            <div className="mt-1 flex items-center justify-stretch gap-2">
-              <Label className="w-20">Height</Label>{" "}
-              <Slider
-                className="w-full"
-                value={[localControls[index]?.sizeh ?? control.sizeh]}
-                min={0}
-                max={newWindowRef.current?.innerHeight || 1080}
-                step={10}
-                onValueChange={(value) => {
-                  const newLocalControls = [...localControls];
-                  newLocalControls[index] = {
-                    ...newLocalControls[index],
-                    sizeh: value[0],
-                  };
-                  setLocalControls(newLocalControls);
-                }}
-                onValueCommit={(value) =>
-                  handleControlChange(index, "sizeh", value[0])
-                }
-              />
-              <Input
-                type="number"
-                className="w-20 h-7 bg-stone-700 rounded-none"
-                value={localControls[index]?.sizeh ?? control.sizeh}
-                onChange={(e) => {
-                  const value = parseFloat(e.target.value);
-                  if (!isNaN(value)) {
-                    const clampedValue = Math.min(
-                      Math.max(value, 0),
-                      newWindowRef.current?.innerHeight || 1080
-                    );
-                    const newLocalControls = [...localControls];
-                    newLocalControls[index] = {
-                      ...newLocalControls[index],
-                      sizeh: clampedValue,
-                    };
-                    setLocalControls(newLocalControls);
-                    handleControlChange(index, "sizeh", clampedValue);
-                  }
-                }}
-                min={0}
-                max={newWindowRef.current?.innerHeight || 1080}
-                step={10}
-              />
-            </div>
+            {/* Height  */}
+            <Numeric
+              label="Height"
+              value={localControls[index]?.sizeh ?? control.sizeh}
+              min={0}
+              max={newWindowRef.current?.innerHeight || 1080}
+              step={10}
+              onValueChange={(value) =>
+                handleControlChange(index, "sizeh", value)
+              }
+            />
 
             <Separator className="bg-stone-300 my-3" />
-            {/* Radius Slider */}
-            <div className="mt-1 flex items-center justify-stretch gap-2">
-              <Label className="w-20">Radius</Label>{" "}
-              <Slider
-                className="w-full"
-                value={[localControls[index]?.radius ?? control.radius]}
-                min={0.5}
-                max={10}
-                step={0.5}
-                onValueChange={(value) => {
-                  const newLocalControls = [...localControls];
-                  newLocalControls[index] = {
-                    ...newLocalControls[index],
-                    radius: value[0],
-                  };
-                  setLocalControls(newLocalControls);
-                }}
-                onValueCommit={(value) =>
-                  handleControlChange(index, "radius", value[0])
-                }
-              />
-              <Input
-                type="number"
-                className="w-20 h-7 bg-stone-700 rounded-none"
-                value={localControls[index]?.radius ?? control.radius}
-                onChange={(e) => {
-                  const value = parseFloat(e.target.value);
-                  if (!isNaN(value)) {
-                    const clampedValue = Math.min(Math.max(value, 0), 10);
-                    const newLocalControls = [...localControls];
-                    newLocalControls[index] = {
-                      ...newLocalControls[index],
-                      radius: clampedValue,
-                    };
-                    setLocalControls(newLocalControls);
-                    handleControlChange(index, "radius", clampedValue);
-                  }
-                }}
-                min={0.5}
-                max={10}
-                step={0.5}
-              />
-            </div>
 
-            {/* Count Slider */}
-            <div className="mt-1 flex items-center justify-stretch gap-2">
-              <Label className="w-20">Count</Label>{" "}
-              <Slider
-                className="w-full"
-                value={[localControls[index]?.count ?? control.count]}
-                min={0}
-                max={9999}
-                step={100}
-                onValueChange={(value) => {
-                  const newLocalControls = [...localControls];
-                  newLocalControls[index] = {
-                    ...newLocalControls[index],
-                    count: value[0],
-                  };
-                  setLocalControls(newLocalControls);
-                }}
-                onValueCommit={(value) =>
-                  handleControlChange(index, "count", value[0])
-                }
-              />
-              <Input
-                type="number"
-                className="w-20 h-7 bg-stone-700 rounded-none"
-                value={localControls[index]?.count ?? control.count}
-                onChange={(e) => {
-                  const value = parseFloat(e.target.value);
-                  if (!isNaN(value)) {
-                    const clampedValue = Math.min(Math.max(value, 0), 9999);
-                    const newLocalControls = [...localControls];
-                    newLocalControls[index] = {
-                      ...newLocalControls[index],
-                      count: clampedValue,
-                    };
-                    setLocalControls(newLocalControls);
-                    handleControlChange(index, "count", clampedValue);
-                  }
-                }}
-                min={0}
-                max={9999}
-                step={100}
-              />
-            </div>
+            {/* Radius  */}
+            <Numeric
+              label="Radius"
+              value={localControls[index]?.radius ?? control.radius}
+              min={0.5}
+              max={20}
+              step={0.5}
+              onValueChange={(value) =>
+                handleControlChange(index, "radius", value)
+              }
+            />
 
-            {/* Tail Slider */}
-            <div className="mt-1 flex items-center justify-stretch gap-2">
-              <Label className="w-20">Trail</Label>{" "}
-              <Slider
-                className="w-full"
-                value={[localControls[index]?.tail ?? control.tail]}
-                min={0}
-                max={100}
-                step={1}
-                onValueChange={(value) => {
-                  const newLocalControls = [...localControls];
-                  newLocalControls[index] = {
-                    ...newLocalControls[index],
-                    tail: value[0],
-                  };
-                  setLocalControls(newLocalControls);
-                }}
-                onValueCommit={(value) =>
-                  handleControlChange(index, "tail", value[0])
-                }
-              />
-              <Input
-                type="number"
-                className="w-20 h-7 bg-stone-700 rounded-none"
-                value={localControls[index]?.tail ?? control.tail}
-                onChange={(e) => {
-                  const value = parseFloat(e.target.value);
-                  if (!isNaN(value)) {
-                    const clampedValue = Math.min(Math.max(value, 0), 100);
-                    const newLocalControls = [...localControls];
-                    newLocalControls[index] = {
-                      ...newLocalControls[index],
-                      tail: clampedValue,
-                    };
-                    setLocalControls(newLocalControls);
-                    handleControlChange(index, "tail", clampedValue);
-                  }
-                }}
-                min={0}
-                max={100}
-                step={1}
-              />
-            </div>
+            {/* Count*/}
+            <Numeric
+              label="Count"
+              value={localControls[index]?.count ?? control.count}
+              min={0}
+              max={9999}
+              step={100}
+              onValueChange={(value) =>
+                handleControlChange(index, "count", value)
+              }
+            />
+
+            {/* Trail */}
+            <Numeric
+              label="Trail"
+              value={localControls[index]?.tail ?? control.tail}
+              min={0}
+              max={100}
+              step={1}
+              onValueChange={(value) =>
+                handleControlChange(index, "tail", value)
+              }
+            />
 
             <Separator className="bg-stone-300 my-3" />
 
@@ -499,91 +264,28 @@ export default function App() {
             {/* Direction X and Y Sliders */}
             {control.posFn === "direction" && (
               <>
-                <div className="mt-1 flex items-center justify-stretch gap-2">
-                  <Label className="w-48">x-direction</Label>{" "}
-                  <Slider
-                    className="w-full"
-                    value={[localControls[index]?.dirx ?? control.dirx]}
-                    min={-5}
-                    max={5}
-                    step={0.1}
-                    onValueChange={(value) => {
-                      const newLocalControls = [...localControls];
-                      newLocalControls[index] = {
-                        ...newLocalControls[index],
-                        dirx: value[0],
-                      };
-                      setLocalControls(newLocalControls);
-                    }}
-                    onValueCommit={(value) =>
-                      handleControlChange(index, "dirx", value[0])
-                    }
-                  />
-                  <Input
-                    type="number"
-                    className="w-20 h-7 bg-stone-700 rounded-none"
-                    value={localControls[index]?.dirx ?? control.dirx}
-                    onChange={(e) => {
-                      const value = parseFloat(e.target.value);
-                      if (!isNaN(value)) {
-                        const clampedValue = Math.min(Math.max(value, -5), 5);
-                        const newLocalControls = [...localControls];
-                        newLocalControls[index] = {
-                          ...newLocalControls[index],
-                          dirx: clampedValue,
-                        };
-                        setLocalControls(newLocalControls);
-                        handleControlChange(index, "dirx", clampedValue);
-                      }
-                    }}
-                    min={-5}
-                    max={5}
-                    step={0.1}
-                  />
-                </div>
-
-                <div className="mt-1 flex items-center justify-stretch gap-2">
-                  <Label className="w-48">y-direction</Label>{" "}
-                  <Slider
-                    className="w-full"
-                    value={[localControls[index]?.diry ?? control.diry]}
-                    min={-5}
-                    max={5}
-                    step={0.1}
-                    onValueChange={(value) => {
-                      const newLocalControls = [...localControls];
-                      newLocalControls[index] = {
-                        ...newLocalControls[index],
-                        diry: value[0],
-                      };
-                      setLocalControls(newLocalControls);
-                    }}
-                    onValueCommit={(value) =>
-                      handleControlChange(index, "diry", value[0])
-                    }
-                  />
-                  <Input
-                    type="number"
-                    className="w-20 h-7 bg-stone-700 rounded-none"
-                    value={localControls[index]?.diry ?? control.diry}
-                    onChange={(e) => {
-                      const value = parseFloat(e.target.value);
-                      if (!isNaN(value)) {
-                        const clampedValue = Math.min(Math.max(value, -5), 5);
-                        const newLocalControls = [...localControls];
-                        newLocalControls[index] = {
-                          ...newLocalControls[index],
-                          diry: clampedValue,
-                        };
-                        setLocalControls(newLocalControls);
-                        handleControlChange(index, "diry", clampedValue);
-                      }
-                    }}
-                    min={-5}
-                    max={5}
-                    step={0.1}
-                  />
-                </div>
+                <Numeric
+                  label="x-direction"
+                  labelWidth="w-48"
+                  value={localControls[index]?.dirx ?? control.dirx}
+                  min={-5}
+                  max={5}
+                  step={0.1}
+                  onValueChange={(value) =>
+                    handleControlChange(index, "dirx", value)
+                  }
+                />
+                <Numeric
+                  label="y-direction"
+                  labelWidth="w-48"
+                  value={localControls[index]?.diry ?? control.diry}
+                  min={-5}
+                  max={5}
+                  step={0.1}
+                  onValueChange={(value) =>
+                    handleControlChange(index, "diry", value)
+                  }
+                />
               </>
             )}
 
