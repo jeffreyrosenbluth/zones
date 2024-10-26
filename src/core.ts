@@ -4,6 +4,7 @@ import { createNoise2D } from "./simplex";
 import { PerlinNoise } from "./perlin";
 
 export type RegionSettings = {
+  id: number;
   visible: boolean;
   tlx: number;
   tly: number;
@@ -16,6 +17,7 @@ export type RegionSettings = {
   diry: number;
   color: string;
   tail: number;
+  dirty: boolean;
 };
 
 // Particle position functions -------------------------------------------------
@@ -88,6 +90,7 @@ export const movement = (posFn: string, x: number, y: number) => {
 };
 
 export class Region {
+  public id: number;
   public radius: number;
   public color: string;
   public bottomLeft: Vec;
@@ -101,6 +104,7 @@ export class Region {
   public posFn: (p: Vec, c?: number) => Vec;
 
   constructor(
+    id: number,
     radius: number,
     color: string,
     bottomLeft: Vec,
@@ -109,6 +113,7 @@ export class Region {
     tail: number,
     posFn: (p: Vec, c?: number) => Vec
   ) {
+    this.id = id;
     this.radius = radius;
     this.color = color;
     this.bottomLeft = bottomLeft;
@@ -127,18 +132,6 @@ export class Region {
     );
     this.posFn = posFn;
     this.frameCount = 0;
-  }
-
-  static emptyRegion(): Region {
-    return new Region(
-      0,
-      "black",
-      new Vec(0, 0),
-      new Vec(0, 0),
-      0,
-      0,
-      simplePosFn
-    );
   }
 
   update() {

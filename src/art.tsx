@@ -79,7 +79,19 @@ function setup(
   canvasWindow.addEventListener("message", (event) => {
     if (event.data && event.data.type === "updateSettings") {
       const settings: RegionSettings[] = event.data.payload;
-      regions = settings.map((s) => region(s));
+      const visibleSettings: RegionSettings[] = settings.filter(
+        (s) => s.visible
+      );
+      const visibleIds = visibleSettings.map((s) => s.id);
+      regions = regions.filter((r) => visibleIds.includes(r.id));
+      for (const s of visibleSettings) {
+        const existingRegionIndex = regions.findIndex((r) => r.id === s.id);
+        if (existingRegionIndex != -1 && s.dirty) {
+          regions[existingRegionIndex] = makeRegion(s);
+        } else if (existingRegionIndex === -1) {
+          regions.push(makeRegion(s));
+        }
+      }
       if (id) {
         cancelAnimationFrame(id);
       }
@@ -98,11 +110,11 @@ function setup(
   }
 }
 
-function region(r: RegionSettings): Region {
-  if (!r.visible) return Region.emptyRegion();
+function makeRegion(r: RegionSettings): Region {
   const bl = new Vec(r.tlx, r.tly + r.sizeh);
   const tr = new Vec(r.tlx + r.sizew, r.tly);
   return new Region(
+    r.id,
     r.radius,
     r.color,
     bl,

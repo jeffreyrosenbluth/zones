@@ -26,20 +26,25 @@ import { ChevronDown } from "lucide-react";
 import Numeric from "./numeric";
 import { RegionSettings } from "./core";
 
-const initialControls: RegionSettings[] = Array(16).fill({
-  visible: false,
-  tlx: 0,
-  tly: 0,
-  sizew: 500,
-  sizeh: 500,
-  radius: 1,
-  count: 1000,
-  posFn: "simple",
-  dirx: 1,
-  diry: 0,
-  color: "rgba(255, 255, 255, 1)",
-  tail: 50,
-});
+const initialControls: RegionSettings[] = Array.from(
+  { length: 16 },
+  (_, index) => ({
+    id: index,
+    visible: false,
+    tlx: 0,
+    tly: 0,
+    sizew: 500,
+    sizeh: 500,
+    radius: 1,
+    count: 1000,
+    posFn: "simple",
+    dirx: 1,
+    diry: 0,
+    color: "rgba(255, 255, 255, 1)",
+    tail: 50,
+    dirty: false,
+  })
+);
 
 export default function App() {
   const [controls, setControls] = useState<RegionSettings[]>(initialControls);
@@ -63,6 +68,9 @@ export default function App() {
         { type: "updateSettings", payload: updatedSettings },
         "*"
       );
+    }
+    for (const setting of updatedSettings) {
+      if (setting.visible) setting.dirty = false;
     }
   };
 
@@ -89,6 +97,7 @@ export default function App() {
     updatedControls[index] = {
       ...updatedControls[index],
       [key]: value,
+      dirty: true,
     };
     setControls(updatedControls);
   };
@@ -248,7 +257,7 @@ export default function App() {
                   <SelectGroup>
                     <SelectItem value="simple">Random Walk</SelectItem>
                     <SelectItem value="studentt">
-                      t-distribution walk
+                      t-Distribution Walk
                     </SelectItem>
                     <SelectItem value="simplex">Swirl</SelectItem>
                     <SelectItem value="cosY">Sinusoid Horizontal</SelectItem>
