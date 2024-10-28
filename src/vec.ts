@@ -19,7 +19,7 @@ export class Vec {
   }
 
   normalize(): Vec {
-    let m = this.mag();
+    const m = this.mag();
     return new Vec(this.x / m, this.y / m);
   }
 

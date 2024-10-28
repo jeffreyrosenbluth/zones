@@ -1,8 +1,10 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import { useEffect } from "react";
+import { useEffect, useRef, useCallback } from "react";
 import useCanvasWindow from "@/art";
 import { useState } from "react";
 import { Label } from "@/components/ui/label";
+// import { saveAs } from "file-saver";
+import { FileSystemJsonStorage } from "./storage";
 
 import {
   Select,
@@ -56,9 +58,90 @@ export default function App() {
   const [colorPickerVisible] = useState<boolean[]>(Array(16).fill(false));
   const { openCanvasWindow, newWindowRef } = useCanvasWindow();
 
-  const handleKeyPress = (event: KeyboardEvent) => {
-    if (event.key === "c") {
-      openCanvasWindow();
+  const storageRef = useRef(new FileSystemJsonStorage());
+
+  const handleKeyPress = useCallback(
+    async (event: KeyboardEvent) => {
+      if (event.key === "c") {
+        openCanvasWindow();
+      } else if (event.key === "s") {
+        event.preventDefault();
+        console.log("Current controls state:", controls);
+        await saveDataToFile();
+      } else if (event.key === "o") {
+        event.preventDefault();
+        await handleFileUpload();
+      }
+    },
+    [controls]
+  ); // Add controls to dependencies
+
+  const saveDataToFile = async () => {
+    try {
+      // Create a deep copy of the controls to ensure we capture all properties
+      const dataToSave = {
+        controls: controls.map((control) => ({ ...control })),
+        timestamp: new Date().toISOString(),
+      };
+
+      console.log("Saving data:", dataToSave);
+      await storageRef.current.save(dataToSave, true);
+      console.log("Save successful");
+    } catch (error) {
+      console.error("Error saving file:", error);
+    }
+  };
+
+  const handleFileUpload = async () => {
+    try {
+      const loadedData = await storageRef.current.load<{
+        controls: RegionSettings[];
+        timestamp: string;
+      }>();
+
+      console.log("Loaded data:", loadedData);
+
+      if (!loadedData?.controls?.length) {
+        throw new Error("Invalid data format");
+      }
+
+      // Validate and sanitize the loaded controls
+      const sanitizedControls = loadedData.controls.map((control, index) => ({
+        id: index,
+        visible: Boolean(control.visible),
+        tlx: Number(control.tlx) || 0,
+        tly: Number(control.tly) || 0,
+        sizew: Number(control.sizew) || 500,
+        sizeh: Number(control.sizeh) || 500,
+        radius: Number(control.radius) || 1,
+        count: Number(control.count) || 1000,
+        posFn: control.posFn || "simple",
+        dirx: Number(control.dirx) || 1,
+        diry: Number(control.diry) || 0,
+        color: control.color || "rgba(255, 255, 255, 1)",
+        tail: Number(control.tail) || 50,
+        dirty: Boolean(control.dirty),
+      }));
+
+      // Update states
+      setControls(sanitizedControls);
+      setLocalControls(
+        sanitizedControls.map((control) => ({
+          tlx: control.tlx,
+          tly: control.tly,
+          sizew: control.sizew,
+          sizeh: control.sizeh,
+          radius: control.radius,
+          count: control.count,
+          tail: control.tail,
+          dirx: control.dirx,
+          diry: control.diry,
+        }))
+      );
+
+      console.log("Load successful");
+    } catch (error) {
+      console.error("Error loading file:", error);
     }
   };
 
@@ -75,14 +158,9 @@ export default function App() {
   };
 
   useEffect(() => {
-    // Attach keypress event listener
     window.addEventListener("keydown", handleKeyPress);
-
-    return () => {
-      // Cleanup listener on unmount
-      window.removeEventListener("keydown", handleKeyPress);
-    };
-  }, []);
+    return () => window.removeEventListener("keydown", handleKeyPress);
+  }, [handleKeyPress]);
 
   useEffect(() => {
     sendMessageToCanvas(controls);
