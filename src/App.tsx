@@ -60,10 +60,23 @@ export default function App() {
 
   const storageRef = useRef(new FileSystemJsonStorage());
 
+  const sendMessageToCanvas = (updatedSettings: RegionSettings[]) => {
+    if (newWindowRef.current) {
+      newWindowRef.current.postMessage(
+        { type: "updateSettings", payload: updatedSettings },
+        "*"
+      );
+    }
+    for (const setting of updatedSettings) {
+      if (setting.visible) setting.dirty = false;
+    }
+  };
+
   const handleKeyPress = useCallback(
     async (event: KeyboardEvent) => {
       if (event.key === "c") {
         openCanvasWindow();
+        setTimeout(() => sendMessageToCanvas(controls), 100); // Small delay to ensure window is ready
       } else if (event.key === "s") {
         event.preventDefault();
         console.log("Current controls state:", controls);
@@ -73,8 +86,8 @@ export default function App() {
         await handleFileUpload();
       }
     },
-    [controls]
-  ); // Add controls to dependencies
+    [controls, openCanvasWindow, sendMessageToCanvas]
+  );
 
   const saveDataToFile = async () => {
     try {
@@ -142,18 +155,6 @@ export default function App() {
       console.log("Load successful");
     } catch (error) {
       console.error("Error loading file:", error);
-    }
-  };
-
-  const sendMessageToCanvas = (updatedSettings: RegionSettings[]) => {
-    if (newWindowRef.current) {
-      newWindowRef.current.postMessage(
-        { type: "updateSettings", payload: updatedSettings },
-        "*"
-      );
-    }
-    for (const setting of updatedSettings) {
-      if (setting.visible) setting.dirty = false;
     }
   };
 
